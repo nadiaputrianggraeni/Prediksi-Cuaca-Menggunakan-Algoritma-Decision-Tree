@@ -1,0 +1,185 @@
+#IMPORT LIBRARY
+#Import library pandas untuk membaca dataset
+import pandas as pd
+
+#Import library berikut untuk pelabelan
+from sklearn.preprocessing import LabelEncoder
+
+#Import library berikut untuk pembagian data/split data
+from sklearn.model_selection import train_test_split
+
+#Import library berikut untuk modelling
+from sklearn.tree import DecisionTreeClassifier
+
+#Import library berikut untuk menampilkan hasil akurasi dan evaluasi model
+from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
+
+#Import library berikut untuk visualisasi data
+import plotly.express as px
+
+#Import library numpy untuk memprediksi
+import numpy as np
+
+#LOAD DATA
+#Load Data
+data = pd.read_csv("/content/seattle-weather.csv")
+
+#Menampilkan dataset
+data
+
+data.dtypes
+data.describe()
+data.shape
+data.columns
+data.info()
+
+fig = px.bar(data["weather"].value_counts(),
+             x = data["weather"].value_counts().index,
+             y = data["weather"].value_counts().values,
+             labels = {"x": "weather", "y": "Jumlah"},
+             title = "Persentase Kelas",
+             color = data["weather"].value_counts().index)
+
+#Menampilkan grafik
+fig.show()
+
+#PREPROCESSING
+data.isna().sum()
+
+data = data.drop(columns = ["date"])
+data
+
+label = LabelEncoder()
+data["weather"] = label.fit_transform(data["weather"])
+data["weather"]
+
+#MENENTUKAN VARIABEL X DAN Y
+x = data.iloc[:, :-1]
+y = data.iloc[:, -1]
+x
+y
+
+fig = px.bar(data["weather"].value_counts(),
+             x = data["weather"].value_counts().index,
+             y = data["weather"].value_counts().values,
+             labels = {"x": "weather", "y": "Jumlah"},
+             title = "Persentase Kelas",
+             color = data["weather"].value_counts().index)
+
+#Menampilkan grafik
+fig.show()
+
+#SPLIT DATA
+#Pisahkan dataset menjadi data training dan data testing
+x_train, x_test, y_train, y_test = train_test_split(x, y, test_size = 0.2,
+                                                    random_state = 42)
+x_train.shape, x_test.shape, y_train.shape, y_test.shape
+
+#MODELLING MENGGUNAKAN ALGORITMA DECISION TREE
+#Inisialisasi model Decision Tree
+model = DecisionTreeClassifier()
+
+#Melatih model menggunakan data latih
+model.fit(x_train, y_train)
+
+#Melakukan prediksi pada data uji
+y_pred = model.predict(x_test)
+
+#EVALUASI MODEL
+#CLASSIFICATION REPORT
+#Evaluasi model
+accuracy = accuracy_score(y_test, y_pred)
+accuracy = accuracy * 100
+report = classification_report(y_test, y_pred,
+                               zero_division = 1)
+
+#Menampilkan hasil evaluasi
+print(f"Accuracy : {accuracy:.2f}")
+print("\nClassification Report :\n", report)
+
+#CONFUSION MATRIX
+import seaborn as sns
+import matplotlib.pyplot as plt
+f, ax = plt.subplots(figsize = (8,5))
+sns.heatmap(confusion_matrix(y_test, y_pred), annot = True, fmt = ".0f",
+            ax = ax)
+plt.title("Confusion Matrix Decision Tree")
+plt.xlabel("Predicted Label")
+plt.ylabel("True Label")
+plt.show()
+
+#PREDIKSI
+#Menghitung nilai min dan max untuk setiap variabel
+min_precipitation = data["precipitation"].min()
+max_precipitation = data["precipitation"].max()
+
+min_temp_max = data["temp_max"].min()
+max_temp_max = data["temp_max"].max()
+
+min_temp_min = data["temp_min"].min()
+max_temp_min = data["temp_min"].max()
+
+min_wind = data["wind"].min()
+max_wind = data["wind"].max()
+
+#Menampilkan hasil
+print("Nilai min precipitation :", min_precipitation, "dan",
+      "Nilai max precipitation :", max_precipitation)
+print("Nilai min temp_max :", min_temp_max, "dan",
+      "Nilai max temp_max :", max_temp_max)
+print("Nilai min temp_min :", min_temp_min, "dan",
+      "Nilai max temp_min :", max_temp_min)
+print("Nilai min wind :", min_wind, "dan", "Nilai max wind :", max_wind)
+
+#DATA DUMMY
+#Membuat data dummy
+np.random.seed(42)  #Untuk reproducibility
+
+#Jumlah baris data yang ingin dibuat
+n_rows = 100
+
+#Kolom "precipitation" dengan nilai acak antara 0.0 dan 55.9
+precipitation = np.random.randint(0.0, 55.9, size = n_rows)
+
+#Kolom "temp_max" dengan nilai acak -1.6 dan 35.6
+temp_max = np.random.randint(-1.6, 35.6, size = n_rows)
+
+#Kolom "temp_min" dengan nilai acak antara -7.1 dan 18.3
+temp_min = np.random.randint(-7.1, 18.3, size = n_rows)
+
+#Kolom "wind" dengan nilai acak antara 0.4 dan 9.5
+wind = np.random.randint(0.4, 9.5, size = n_rows)
+
+#Kolom "weather" dengan nilai acak 0 (drizzle), 1 (fog), 2 (rain), 3 (snow) atau 4 (sun)
+weather = np.random.randint(0, 5, size = n_rows)
+
+#Membuat DataFrame
+df = pd.DataFrame({
+    "precipitation" : precipitation,
+    "temp_max" : temp_max,
+    "temp_min" : temp_min,
+    "wind" : wind,
+    "weather" : weather
+})
+
+#Menampilkan lima baris pertama dari data
+print(df.head())
+
+f1 = 38
+f2 = 22
+f3 = 15
+f4 = 6
+
+input = np.array([[f1, f2, f3, f4]])
+prediction = model.predict(input)
+
+if prediction == 0 :
+  print("drizzle")
+elif prediction == 1 :
+  print("fog")
+elif prediction == 2 :
+  print("rain")
+elif prediction == 3 :
+  print("snow")
+else :
+  print("sun")
